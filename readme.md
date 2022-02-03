@@ -20,6 +20,14 @@ Once a ruleset is chosen, simply pick your CSV. The errors will be displayed as 
 
 ![Usage](usage.gif)
 
+## dependencies
+
+This small proof-of-concept relies on
+* [https://www.papaparse.com/](https://www.papaparse.com/) which does the heavy lifting of parsing the CSV
+* [http://getskeleton.com/](http://getskeleton.com/) for styling
+* [https://releases.jquery.com/](jquery) for interaction handling and easy lookup
+* [https://lodash.com/](lodash) to simplify some actions such as sampling or truncating
+
 ## live reload
 
 To debug the html contents, it's easiest to use the `livereload` plugin. The snippet is automatically added to the layout header unless running in `production` environment.
