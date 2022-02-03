@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script>
+      document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
+      ':35729/livereload.js?snipver=1"></' + 'script>')
+    </script>
+
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" type="text/css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js" integrity="sha512-EbdJQSugx0nVWrtyK3JdQQ/03mS3Q1UiAhRtErbwl1YL/+e2hZdlIcSURxxh7WXHTzn83sjlh2rysACoJGfb6g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+    <script>
+
+      const itemRules = {
+        columns: [
+          { header: "カテゴリ(親)", required: true },
+          { header: "商品タイプ(親)", required: true },
+          { header: "商品タイプ(子)", required: true },
+          { header: "性別", required: true },
+          { header: "ブランド品番", required: true },
+          { header: "CS別品番", required: true },
+          { header: "商品名", required: true },
+          { header: "元上代", required: true },
+          { header: "商品コメント", required: true }
+        ]
+      }
+      const inventoryRules = {
+        columns: [
+          { header: "店舗", required: true },
+          { header: "商品コード", required: true },
+          { header: "在庫数", required: true },
+        ]
+      }
+
+      function setRules(rules) {
+        $('#rules').val(JSON.stringify(rules, null, 2))
+        return false
+      }
+
+    </script>
+
+    <style>
+      .header {
+          margin-top: 6rem;
+          text-align: center;
+      }
+
+      .page-section {
+          border-top: 1px solid #eee;
+          padding: 4rem 0;
+          margin-bottom: 0;
+      }
+
+      .page-section h3 {
+          text-transform: uppercase;
+          font-size: 1.4rem;
+          letter-spacing: .2rem;
+          font-weight: 600;
+      }
+
+      textarea {
+        height: 200px;
+        width: 100%;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+    </style>
+
+  </head>
+  <body>
+    <div class="container">
+      <section class="header">
+        <h2 class="title">CSV Validator</h2>
+      </section>
+
+      <div class="page-section">
+        <h3>Rules</h3>
+        <p>
+          <a href="#" onclick="setRules(inventoryRules)">Inventory</a> | <a href="#" onclick="setRules(itemRules)">Items</a>
+        </p>
+        <textarea id="rules"></textarea>
+      </div>
+      <div class="page-section">
+        <h3>Results</h3>
+        <p><input id="csv-upload" type="file" accept=".csv" onchange="parse()" /></p>
+        <div id="output"></div>
+      </div>
+
+      <p><button onclick="location.reload()">reset</button></p>
+    </div>
+
+    <script>
+
+      setRules(itemRules)
+
+      function getTableRow(values) {
+        return '<tr>' + values.map(v => `<td>${_.truncate(v, { length: 30 })}</td>`).join('') + '</tr>';
+      }
+
+      function getRules() {
+        return JSON.parse($('#rules').val());
+      }
+
+      function getValidationErrors(headers, rules) {
+        const errors = [];
+        for (let rule of rules.columns) {
+          if (rule.required && !headers.includes(rule.header)) {
+            errors.push(`missing column: ${rule.header}`);
+          }
+        }
+        return errors.length > 0 ? errors : null
+      }
+
+      function parse() {
+        $("#csv-upload").parse({
+          config: {
+            complete: function(results, file) {
+              const rules = getRules()
+
+              const headers = results.data[0]
+              const issues = getValidationErrors(headers, rules)
+              if (issues) {
+                $('#output').html('<ul>' + issues.map(i => `<li>${i}</li>`).join('') + '</ul>')
+                return
+              }
+
+              const rows = results.data.slice(1)
+              const samples = _.sampleSize(rows, 10)
+              const samplesHtml = _.map(samples, getTableRow).join('')
+              $('#output').html(`<table><tr><th>${headers.join('</th><th>')}</th></tr><tbody>${samplesHtml}</tbody></table>`)
+            }
+          },
+        before: function() {
+          $('#output').html('<p>Parsing file...</p>');
+        },
+        error: function(err, file, inputElem, reason)
+        {
+          $('#output').text('did not work: ' + reason);
+        }
+      });
+      }
+    </script>
+  </body>
+</html>
