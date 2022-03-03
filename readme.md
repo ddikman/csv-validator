@@ -36,3 +36,13 @@ To debug the html contents, it's easiest to use the `livereload` plugin. The sni
 npm install -g livereload
 livereload
 ```
+
+## next steps
+
+It would be really cool to accept google sheet links straight off as well. I could parse these and convert them to the CSV download format:
+
+```
+https://docs.google.com/spreadsheets/d/{key}/gviz/tq?tqx=out:csv&gid={sheet_id}
+```
+
+The file will need to be publically open to allow this though.
